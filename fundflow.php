@@ -10,7 +10,7 @@
 /*
 Plugin Name: FundFlow
 Description: Add Donation form to anywhere on your WordPress site.
-Version: 1.0
+Version: 1.5
 Author: Cyberwizard
 Author URI:https://github.com/cyberwizard-dev
 */
@@ -153,7 +153,7 @@ function fundflow_settings_page(): void
 function paystack_enqueue_scripts(): void
 {
     global $public_key;
-    $public_key = get_option('paystack_public_key', 'pk_test_fc018c5f85c2c87a539d3f33cef343fc05089170');
+    $public_key = get_option('paystack_public_key', '');
     global $thank_you_message;
     $thank_you_message = get_option('paystack_thank_you_message', '<h4 class=\'text-success mb-3\'>Thank You for Your Donation!</h4><p>Your generosity is greatly appreciated. With your support, we can continue making a positive impact.</p>');
     global $currency;
