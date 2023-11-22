@@ -5,16 +5,15 @@ Customize settings, receive contributions, and show appreciation with personaliz
 
 ## Plugin Details
 
-- **Plugin Name:FundFlow
-- **Contributors:remicyberwizard
-- **Donate link: 
-- **Tags:donate, donation, paystack, money, payment, receive money
-- **Requires at least:4.7
-- **Tested up to:5.4
-- **Stable tag:4.3
-- **Requires PHP:8.0
-- **License:GPLv2 or later
-- **License URI:[https://www.gnu.org/licenses/gpl-2.0.html](https://www.gnu.org/licenses/gpl-2.0.html)
+=== FundFlow ===
+Contributors:remicyberwizard
+Tags: money,donate,donation,payment,paystack
+Requires at least: 4.7
+Tested up to: 5.4
+Stable tag: 1.0
+Requires PHP: 8.0
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 ## Installation
 
