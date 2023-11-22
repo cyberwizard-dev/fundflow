@@ -1,10 +1,3 @@
-# FundFlow Plugin
-
-FundFlow is a WordPress plugin designed to simplify the integration of a donation form into your WordPress site.
-Customize settings, receive contributions, and show appreciation with personalized thank-you messages.
-
-## Plugin Details
-
 === FundFlow ===
 Contributors:remicyberwizard
 Tags: money,donate,donation,payment,paystack
@@ -14,6 +7,12 @@ Stable tag: 1.0
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+# FundFlow Plugin
+
+FundFlow is a WordPress plugin designed to simplify the integration of a donation form into your WordPress site.
+Customize settings, receive contributions, and show appreciation with personalized thank-you messages.
+
 
 ## Installation
 
