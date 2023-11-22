@@ -8,17 +8,18 @@
 </html>
 <?php
 /*
-Plugin Name: Paystack Donation
-Description: Add Paystack donation form to anywhere on your WordPress site.
+Plugin Name: FundFlow
+Description: Add Donation form to anywhere on your WordPress site.
 Version: 1.0
 Author: Cyberwizard
+Author URI:https://github.com/cyberwizard-dev
 */
 
 
 
 
 // Function to register settings
-function paystack_register_settings(): void
+function fundflow_register_settings(): void
 {
     register_setting('paystack_settings_group', 'paystack_public_key');
     register_setting('paystack_settings_group', 'paystack_thank_you_message');
@@ -38,22 +39,22 @@ function sanitize_max_donation($input)
     return max($min_donation + 1, intval($input)); // Ensure maximum is greater than the minimum
 }
 
-add_action('admin_init', 'paystack_register_settings');
+add_action('admin_init', 'fundflow_register_settings');
 
 // Function to add menu page
 function paystack_menu(): void
 {
-    add_menu_page('Paystack Donation Settings', 'Paystack Settings', 'manage_options', 'paystack-donation-settings', 'paystack_settings_page', 'dashicons-admin-generic');
+    add_menu_page('FundFlow Settings', 'FundFlow Settings', 'manage_options', 'fundflow-donation-settings', 'fundflow_settings_page', 'dashicons-admin-generic');
 }
 
 add_action('admin_menu', 'paystack_menu');
 
 // Function to display settings page
-function paystack_settings_page(): void
+function fundflow_settings_page(): void
 {
     ?>
     <div class="wrap">
-        <h1>Paystack Donation Settings</h1>
+        <h1>FundFlow Settings</h1>
 
         <?php
         if (isset($_GET['settings-updated'])) {
@@ -172,7 +173,7 @@ function paystack_enqueue_scripts(): void
 add_action('wp_enqueue_scripts', 'paystack_enqueue_scripts');
 
 // Function to add shortcode
-function paystack_donation_form_shortcode(): false|string
+function fundflow_shortcode(): false|string
 {
 
     $currency = get_option('paystack_currency', 'NGN');
@@ -185,10 +186,10 @@ function paystack_donation_form_shortcode(): false|string
             </p>
         </div>
 
-        <div class="card p-5 shadow max-w-md mx-auto rounded-lg">
+        <div class="card  p-5 shadow max-w-md mx-auto rounded-lg">
             <form id="paystack-donation-form" class="needs-validation" novalidate>
                 <div class="mb-4">
-                    <label for="amount" class="block text-sm font-medium text-gray-600">Amount (<?php echo $currency?>)</label>
+                    <label for="amount" class="block text-sm font-medium text-gray-600">Amount (<?php echo strtoupper($currency)?>)</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                             <span  class='text-gray-500 '><i class='fas fa-money-bill'></i></span>
@@ -219,7 +220,7 @@ function paystack_donation_form_shortcode(): false|string
         </div>
     </div>
 
-    <div id="thank-you-card" class="card p-5 shadow max-w-md mx-auto hidden">
+    <div id="thank-you-card" class="card p-5 shadow max-w-md mx-auto hidden mb-4">
         <div class="text-center">
             <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
             <p>
@@ -265,7 +266,7 @@ function paystack_donation_form_shortcode(): false|string
                     email: email,
                     amount: amount * 100,
                     ref: 'donation_' + Math.floor((Math.random() * 1000000000) + 1),
-                    currency: paystack_vars.currency,
+                    currency: paystack_vars.currency.toUpperCase(),
                     callback: function (response) {
                         // Handle successful payment
                         console.log(response);
@@ -295,4 +296,4 @@ function paystack_donation_form_shortcode(): false|string
 }
 
 // Register the shortcode for donation form
-add_shortcode('paystack_donation_form', 'paystack_donation_form_shortcode');
+add_shortcode('fundflow', 'fundflow_shortcode');
