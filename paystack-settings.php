@@ -6,6 +6,7 @@ function paystack_register_settings()
     register_setting('paystack_settings_group', 'paystack_public_key');
     register_setting('paystack_settings_group', 'paystack_thank_you_message');
     register_setting('paystack_settings_group', 'paystack_min_donation');
+    register_setting('paystack_settings_group', 'paystack_currency');
     register_setting('paystack_settings_group', 'paystack_max_donation');
 }
 
@@ -39,6 +40,15 @@ function paystack_settings_page()
                     </td>
                 </tr>
 
+                <tr valign='top'>
+                    <th scope='row'>CURRENCY [DEFAULT :NGN] </th>
+                    <td>
+                        <input type='number' name='paystack_currency'
+                               value="<?php echo esc_attr(get_option('paystack_currency')) ?? 'NGN'; ?>"/>
+                        <p class='description'>[OPTIONS: GHS,NGN,USD,ZAR,KES ]</p>
+                    </td>
+                </tr>
+
                 <tr valign="top">
                     <th scope="row">Thank You Message</th>
                     <td>
@@ -48,6 +58,10 @@ function paystack_settings_page()
                             donation.</p>
                     </td>
                 </tr>
+
+
+
+
 
                 <tr valign="top">
                     <th scope="row">Minimum Donation Amount</th>

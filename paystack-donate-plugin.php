@@ -1,3 +1,11 @@
+
+<html>
+<style>
+    span.text-gray-500 {
+        margin: -15px;
+    }
+</style>
+</html>
 <?php
 /*
 Plugin Name: Paystack Donation
@@ -6,12 +14,15 @@ Version: 1.0
 Author: Cyberwizard
 */
 
-global $thank_you_message;
+
+
+
 // Function to register settings
-function paystack_register_settings()
+function paystack_register_settings(): void
 {
     register_setting('paystack_settings_group', 'paystack_public_key');
     register_setting('paystack_settings_group', 'paystack_thank_you_message');
+    register_setting('paystack_settings_group', 'paystack_currency');
     register_setting('paystack_settings_group', 'paystack_min_donation', 'sanitize_min_donation');
     register_setting('paystack_settings_group', 'paystack_max_donation', 'sanitize_max_donation');
 }
@@ -30,15 +41,15 @@ function sanitize_max_donation($input)
 add_action('admin_init', 'paystack_register_settings');
 
 // Function to add menu page
-function paystack_menu()
+function paystack_menu(): void
 {
-    add_menu_page('Paystack Settings', 'Paystack Settings', 'manage_options', 'paystack-donation-settings', 'paystack_settings_page', 'dashicons-admin-generic');
+    add_menu_page('Paystack Donation Settings', 'Paystack Settings', 'manage_options', 'paystack-donation-settings', 'paystack_settings_page', 'dashicons-admin-generic');
 }
 
 add_action('admin_menu', 'paystack_menu');
 
 // Function to display settings page
-function paystack_settings_page()
+function paystack_settings_page(): void
 {
     ?>
     <div class="wrap">
@@ -67,13 +78,24 @@ function paystack_settings_page()
                         <p class="description">Enter your Paystack public key.</p>
                     </td>
                 </tr>
-
+                <tr valign='top'>
+                    <th scope='row'>CURRENCY [DEFAULT :NGN]</th>
+                    <td>
+                        <input required type='text' name='paystack_currency'
+                               value="<?php if (!empty(get_option('paystack_currency'))) {
+                                   echo esc_attr(get_option('paystack_currency'));
+                               }else{
+                                   echo "NGN";
+                                   }?>"/>
+                        <p class='description'>[OPTIONS: GHS,NGN,USD,ZAR,KES ]</p>
+                    </td>
+                </tr>
                 <tr valign="top">
                     <th scope="row">Thank You Message</th>
                     <td>
                         <textarea
-                                name="paystack_thank_you_message"><?php echo esc_attr(get_option('paystack_thank_you_message')); ?></textarea>
-                        <p class="description">Enter the thank you message to be displayed after a successful
+                               maxlength="500" name="paystack_thank_you_message"><?php echo esc_attr(get_option('paystack_thank_you_message')); ?></textarea>
+                        <p class="description">Enter the thank-you message to be displayed after a successful
                             donation.</p>
                     </td>
                 </tr>
@@ -103,18 +125,18 @@ function paystack_settings_page()
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            var settingsForm = document.getElementById('paystack-settings-form');
+            const settingsForm = document.getElementById('paystack-settings-form');
 
             settingsForm.addEventListener('submit', function (e) {
-                var minDonation = document.getElementsByName('paystack_min_donation')[0].value;
-                var maxDonation = document.getElementsByName('paystack_max_donation')[0].value;
+                let minDonation = parseInt(document.getElementsByName('paystack_min_donation')[0].value, 10);
+                var maxDonation = parseInt(document.getElementsByName('paystack_max_donation')[0].value, 10);
 
                 if (minDonation < 100) {
                     alert('Minimum donation amount must be 100 or more.');
                     e.preventDefault();
                 }
 
-                if (maxDonation <= minDonation) {
+                if (minDonation > maxDonation) {
                     alert('Maximum donation amount must be greater than the minimum.');
                     e.preventDefault();
                 }
@@ -122,22 +144,28 @@ function paystack_settings_page()
         });
     </script>
 
+
     <?php
 }
 
 // Enqueue Paystack script
 function paystack_enqueue_scripts(): void
 {
-    wp_enqueue_style('bootstrap-css', 'https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css');
+    global $public_key;
+    $public_key = get_option('paystack_public_key', 'pk_test_fc018c5f85c2c87a539d3f33cef343fc05089170');
+    global $thank_you_message;
+    $thank_you_message = get_option('paystack_thank_you_message', '<h4 class=\'text-success mb-3\'>Thank You for Your Donation!</h4><p>Your generosity is greatly appreciated. With your support, we can continue making a positive impact.</p>');
+    global $currency;
+    $currency = get_option('paystack_currency', 'NGN');    wp_enqueue_style('bootstrap-css', 'https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css');
     wp_enqueue_style('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css');
     wp_enqueue_script('paystack-script', 'https://js.paystack.co/v1/inline.js', array('jquery'), null, true);
+    wp_enqueue_style('tailwind-css', 'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
 
-    $public_key = get_option('paystack_public_key', 'pk_test_fc018c5f85c2c87a539d3f33cef343fc05089170');
-    $thank_you_message = get_option('paystack_thank_you_message', '<h4 class=\'text-success mb-3\'>Thank You for Your Donation!</h4><p>Your generosity is greatly appreciated. With your support, we can continue making a positive impact.</p>');
 
     wp_localize_script('paystack-script', 'paystack_vars', array(
         'public_key' => $public_key,
         'thank_you_message' => $thank_you_message,
+        'currency' => $currency
     ));
 }
 
@@ -146,50 +174,68 @@ add_action('wp_enqueue_scripts', 'paystack_enqueue_scripts');
 // Function to add shortcode
 function paystack_donation_form_shortcode(): false|string
 {
+
+    $currency = get_option('paystack_currency', 'NGN');
+
     ob_start();
     ?>
-    <div id="paystack-donation-form" class='container mt-5'>
-        <div class='card p-3 shadow' style='max-width: 400px; margin: 0 auto;'>
-            <form id='paystack-donation-form' class='needs-validation' novalidate>
-                <div class='form-group'>
-                    <label for='amount'>
-                        Amount (NGN)
-                    </label>
-                    <div class='input-group'>
-                        <div class='input-group-prepend'>
-                            <span class='input-group-text'>&#x20A6;</span>
+    <div id="paystack-donation-form" class="container mt-2">
+        <div class='text-center mb-3'>
+            <p class='text-2x1 font-bold text-green-500'>We Accept Donations!</p>
+            </p>
+        </div>
+
+        <div class="card p-5 shadow max-w-md mx-auto rounded-lg">
+            <form id="paystack-donation-form" class="needs-validation" novalidate>
+                <div class="mb-4">
+                    <label for="amount" class="block text-sm font-medium text-gray-600">Amount (<?php echo $currency?>)</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <span  class='text-gray-500 '><i class='fas fa-money-bill'></i></span>
                         </div>
-                        <input placeholder="5000" type='number' class='form-control' name='amount' id='amount' required>
+                        <input placeholder="5000" type="number" class="form-input py-2 pl-8 w-full" name="amount"
+                               id="amount" required>
                     </div>
                 </div>
 
-                <div class='form-group'>
-                    <label for='email'>
-                        Email
-                    </label>
-                    <div class='input-group'>
-                        <div class='input-group-prepend'>
-                            <span class='input-group-text'><i class='fas fa-envelope'></i></span>
+                <div class="mb-4">
+                    <label for="email" class="block text-sm font-medium text-gray-600">Email</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <span class="text-gray-500"><i class="fas fa-envelope"></i></span>
                         </div>
-                        <input placeholder="example@email.com" type='email' class='form-control' name='email'
-                               id='email'>
+                        <input placeholder="example@email.com" type="email"
+                               class="form-input py-2 pl-8 w-full is-next-40px-4"
+                               name="email" id="email" required>
                     </div>
                 </div>
 
-                <button type='submit' class='btn btn-success btn-block' id='paystack-donate-button'>Donate with
-                    Paystack
+                <button type="submit"
+                        class="bg-green-500 text-white px-4 py-2 rounded-full w-full hover:bg-green-600 focus:outline-none focus:ring focus:border-blue-300">
+                    Send Donation
                 </button>
 
-                <div class='invalid-feedback'>
-                    Please enter a valid amount.
-                </div>
             </form>
         </div>
     </div>
 
-    <div id='thank-you-card' class='card p-3 shadow' style='max-width: 400px; margin: 0 auto; display: none;'>
-        <?php echo  esc_attr(get_option('paystack_public_key')) ?? "We are grateful."?>
+    <div id="thank-you-card" class="card p-5 shadow max-w-md mx-auto hidden">
+        <div class="text-center">
+            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+            <p>
+                <?php
+                $thankYouMessage = esc_attr(get_option('paystack_thank_you_message'));
+                echo !empty($thankYouMessage) ? $thankYouMessage : 'Thank you for your donation!';
+                ?>
+            </p>
+        </div>
     </div>
+
+    <div class='text-center mt-2'>
+        <p class='text-sm text-gray -500'>Developed by <a href='mailto:eminibest@gmail.com' class='text-green-500'>Cyberwizard</a>
+        </p>
+    </div>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -205,7 +251,7 @@ function paystack_donation_form_shortcode(): false|string
                 paystackForm.classList.add('was-validated');
             });
 
-            var paystackButton = document.getElementById('paystack-donate-button');
+            var paystackButton = document.querySelector('#paystack-donation-form button[type="submit"]');
 
             paystackButton.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -219,7 +265,7 @@ function paystack_donation_form_shortcode(): false|string
                     email: email,
                     amount: amount * 100,
                     ref: 'donation_' + Math.floor((Math.random() * 1000000000) + 1),
-                    currency: 'NGN',
+                    currency: paystack_vars.currency,
                     callback: function (response) {
                         // Handle successful payment
                         console.log(response);
